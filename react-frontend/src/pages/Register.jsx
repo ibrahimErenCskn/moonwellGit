@@ -1,48 +1,35 @@
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux'
+import { register } from '../redux/slices/AuthSlice'
+import { useNavigate } from 'react-router-dom'
 
 export default function Register() {
-    const navigate = useNavigate();
-    const register = async (event) => {
-        try {
-            event.preventDefault();
-            console.log(event.target.elements.name.value)
-            console.log(event.target.elements.email.value)
-            console.log(event.target.elements.password.value)
-            const response = await axios.post('http://127.0.0.1:8000/api/register', {
-                name: event.target.elements.name.value,
-                email: event.target.elements.email.value,
-                password: event.target.elements.password.value
-            });
-            if (
-                response.data?.status
-            ) {
-                navigate('/login')
-            }
-        } catch (error) {
-            console.error(error);
-            // Hata mesajı gösterin
-        }
-    };
-    const getUserInfo = async () => {
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/api/getuser', {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+    const dispatch = useDispatch()
+    const navigation = useNavigate()
+    const { registerMessage } = useSelector((state) => state.auth)
+    const registerHandle = (e) => {
+        e.preventDefault()
+        dispatch(
+            register(
+                {
+                    data: {
+                        name: e.target.elements.name.value,
+                        email: e.target.elements.email.value,
+                        password: e.target.elements.password.value
+                    }
                 }
-            });
-            const userInfo = response.data;
-            console.log(userInfo?.status ? userInfo.status : null)
-        } catch (error) {
-            console.error(error);
-            // Hata mesajı gösterin
+            )
+        )
+    }
+    useEffect(() => {
+        if (registerMessage === true) {
+            navigation('/login')
         }
-    };
+    }, [registerMessage])
 
     return (
-        <div>
-            <form onSubmit={(e) => register(e)}>
+        <div onSubmit={(e) => registerHandle(e)}>
+            <form>
                 <div className="form-group">
                     <label htmlFor="exampleInputName">Name</label>
                     <input name='name' type="text" className="form-control" id="exampleInputName" placeholder="Enter name" />
